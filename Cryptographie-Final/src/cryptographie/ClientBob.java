@@ -2,8 +2,6 @@ package cryptographie;
 
 import cryptographie.systems.CryptoSystemPaillier;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -52,7 +50,7 @@ public class ClientBob
                 sw.write("Ack".getBytes());
             }
             
-            throw new IndexOutOfBoundsException("index " + index + " is out of possible answers.");
+            throw new IndexOutOfBoundsException("Index " + index + " is out of possible answers.");
         }
         catch(IOException ex)
         {

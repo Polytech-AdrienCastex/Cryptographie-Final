@@ -11,5 +11,6 @@ public class Main
         System.out.println(new String(new ClientBob("127.0.0.1", 1817).get(1)));
         System.out.println(new String(new ClientBob("127.0.0.1", 1817).get(2)));
         System.out.println(new String(new ClientBob("127.0.0.1", 1817).get(3)));
+        System.out.println(new String(new ClientBob("127.0.0.1", 1817).get(4)));
     }
 }
