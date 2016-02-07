@@ -8,9 +8,9 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class ClientBob
+public abstract class Client<T>
 {
-    public ClientBob(String ip, int port) throws UnknownHostException
+    public Client(String ip, int port) throws UnknownHostException
     {
         byte[] ipb = new byte[4];
         String[] ips = ip.trim().split("\\.");
@@ -23,12 +23,16 @@ public class ClientBob
     
     private final InetAddress addr;
     private final int port;
-
-    public byte[] get(int index)
+    
+    protected abstract T receiveData(SocketWrapper sw, CryptoSystemPaillier csp, BigInteger input) throws IOException;
+    
+    protected void ack(SocketWrapper sw) throws IOException
     {
-        if(index < 1)
-            throw new IllegalArgumentException("index must be >= 1.");
-        
+        sw.write("Ack".getBytes());
+    }
+
+    public T get(BigInteger input) throws IOException
+    {
         try(SocketWrapper sw = new SocketWrapper(new Socket(addr, port), 100))
         {
             CryptoSystemPaillier csp = new CryptoSystemPaillier(512);
@@ -38,25 +42,9 @@ public class ClientBob
             if(!new String(sw.read()).equals("Ack"))
                 return null;
             
-            sw.write(csp.encrypt(BigInteger.valueOf(index)).toByteArray());
+            sw.write(csp.encrypt(input).toByteArray());
             
-            byte[] data;
-            int nb = 0;
-            while((data = sw.read()).length > 0)
-            {
-                if(++nb == index)
-                    return csp.decrypt(new BigInteger(data)).toByteArray();
-                
-                sw.write("Ack".getBytes());
-            }
-            
-            throw new IndexOutOfBoundsException("Index " + index + " is out of possible answers.");
+            return receiveData(sw, csp, input);
         }
-        catch(IOException ex)
-        {
-            ex.printStackTrace();
-        }
-        
-        return null;
     }
 }

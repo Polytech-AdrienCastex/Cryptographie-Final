@@ -4,18 +4,27 @@ import cryptographie.systems.CryptoSystemPaillier;
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.util.Random;
+import java.util.stream.Stream;
 import javax.net.ServerSocketFactory;
 
-public class ServerAlice implements Runnable
+public abstract class Server implements Runnable
 {
-    public ServerAlice(int port, String... values)
+    public Server(int port, BigInteger... values)
     {
         this.values = values;
         this.port = port;
     }
+    public Server(int port, Stream<BigInteger> values)
+    {
+        this(port, values.toArray(BigInteger[]::new));
+    }
     
     private final int port;
-    private final String[] values;
+    
+    protected final BigInteger[] values;
+    
+    protected abstract BigInteger getValue(int index);
+    protected abstract BigInteger getOffset(int index);
     
     @Override
     public void run()
@@ -38,9 +47,9 @@ public class ServerAlice implements Runnable
                     for(int i = 0; i < biValues.length; i++)
                     {
                         biValues[i] = I
-                                .multiply(CryptoSystemPaillier.encrypt(BigInteger.valueOf(-(i + 1)), key))
+                                .multiply(CryptoSystemPaillier.encrypt(getOffset(i), key))
                                 .modPow(new BigInteger(key.bitCount() - 1, new Random()), key.multiply(key))
-                                .multiply(CryptoSystemPaillier.encrypt(new BigInteger(values[i].getBytes()), key));
+                                .multiply(CryptoSystemPaillier.encrypt(getValue(i), key));
                     }
                     
                     for(BigInteger bi : biValues)
